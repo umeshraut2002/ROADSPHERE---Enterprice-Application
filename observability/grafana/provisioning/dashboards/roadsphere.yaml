@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: RoadSphere local dashboards
+    orgId: 1
+    folder: RoadSphere
+    type: file
+    disableDeletion: true
+    editable: false
+    options:
+      path: /var/lib/grafana/dashboards

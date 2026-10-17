@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: vehicle-registry-service
+  datasource:
+    url: ${ROADSPHERE_DB_URL:jdbc:postgresql://127.0.0.1:5432/roadsphere}
+    username: ${ROADSPHERE_DB_USERNAME:roadsphere_registry}
+    password: ${ROADSPHERE_DB_PASSWORD:roadsphere-local-only}
+    hikari:
+      maximum-pool-size: 5
+  flyway:
+    enabled: true
+    schemas: vehicle_registry
+    default-schema: vehicle_registry
+    create-schemas: false
+  jackson:
+    default-property-inclusion: non_null
+    deserialization:
+      fail-on-unknown-properties: true
+
+server:
+  address: ${ROADSPHERE_BIND_ADDRESS:127.0.0.1}
+  port: ${PORT:8083}
+  shutdown: graceful
+  error:
+    include-message: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+      group:
+        readiness:
+          include: readinessState,db
+  info:
+    env:
+      enabled: false
+
+info:
+  app:
+    name: vehicle-registry-service
+    scope: synthetic-learning-demo
+
+logging:
+  level:
+    root: INFO

@@ -1,0 +1,11 @@
+﻿name: booking-service
+port: 8095
+api_prefix: /api/v1/bookings
+owner: "Mobility operations domain"
+responsibility: "Prevent overlapping maintenance and charging reservations using transactional conflict checks."
+upstream_dependencies: "identity-service,maintenance-service,charging-station-service"
+downstream_dependencies: "notification-service,audit-service,billing-service"
+produces_events: "BookingConfirmed.v1,BookingCancelled.v1"
+consumes_events: "None"
+data_ownership: "booking schema"
+implementation_status: planned

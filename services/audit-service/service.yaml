@@ -1,0 +1,11 @@
+﻿name: audit-service
+port: 8102
+api_prefix: /api/v1/audit
+owner: "Platform domain"
+responsibility: "Append security-sensitive and business audit records with restricted read access and defined retention."
+upstream_dependencies: "identity-service"
+downstream_dependencies: "reporting-service"
+produces_events: "AuditRecordCreated.v1"
+consumes_events: "VehicleRegistered.v1,SubscriptionChanged.v1,BookingConfirmed.v1,SimulatedPaymentCompleted.v1"
+data_ownership: "audit schema"
+implementation_status: planned

@@ -1,0 +1,11 @@
+﻿name: invoice-service
+port: 8099
+api_prefix: /api/v1/invoices
+owner: "Commercial domain"
+responsibility: "Create immutable invoice records from billing outcomes and render sample downloadable documents."
+upstream_dependencies: "billing-service,payment-simulator"
+downstream_dependencies: "customer-profile-service"
+produces_events: "InvoiceGenerated.v1"
+consumes_events: "ChargeCalculated.v1,SimulatedPaymentCompleted.v1"
+data_ownership: "invoice schema"
+implementation_status: planned

@@ -1,0 +1,11 @@
+﻿name: promotions-service
+port: 8100
+api_prefix: /api/v1/promotions
+owner: "Commercial domain"
+responsibility: "Evaluate promotion eligibility, usage windows, and discount limits without applying money movement."
+upstream_dependencies: "identity-service"
+downstream_dependencies: "subscription-service,billing-service"
+produces_events: "PromotionRedeemed.v1"
+consumes_events: "None"
+data_ownership: "promotion schema"
+implementation_status: planned

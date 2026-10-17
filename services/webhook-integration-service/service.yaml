@@ -1,0 +1,11 @@
+﻿name: webhook-integration-service
+port: 8105
+api_prefix: /api/v1/webhooks
+owner: "Platform integration domain"
+responsibility: "Store signed webhook registrations, deliver events asynchronously, bound retries, and retain delivery history."
+upstream_dependencies: "identity-service"
+downstream_dependencies: "audit-service"
+produces_events: "WebhookDeliverySucceeded.v1,WebhookDeliveryExhausted.v1"
+consumes_events: "DiagnosticAlertCreated.v1,TripCompleted.v1,InvoiceGenerated.v1,SubscriptionChanged.v1"
+data_ownership: "webhook schema"
+implementation_status: planned

@@ -1,0 +1,11 @@
+﻿name: trip-management-service
+port: 8089
+api_prefix: /api/v1/trips
+owner: "Connected vehicle domain"
+responsibility: "Detect journey boundaries from status/location signals and expose paginated synthetic trip records."
+upstream_dependencies: "vehicle-registry-service,location-service"
+downstream_dependencies: "reporting-service,fleet-analytics-service"
+produces_events: "TripCompleted.v1"
+consumes_events: "VehicleTelemetryReceived.v1,VehicleLocationRecorded.v1"
+data_ownership: "trip schema"
+implementation_status: planned

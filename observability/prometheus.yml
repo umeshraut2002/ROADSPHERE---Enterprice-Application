@@ -1,0 +1,22 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: roadsphere-local-demo-api
+    metrics_path: /metrics
+    static_configs:
+      - targets: [local-demo-api:8080]
+  - job_name: roadsphere-vehicle-registry
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [vehicle-registry-service:8083]
+  - job_name: roadsphere-vehicle-status
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [vehicle-status-service:8087]
+
+  - job_name: telemetry-ingestion-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [telemetry-ingestion-service:8086]

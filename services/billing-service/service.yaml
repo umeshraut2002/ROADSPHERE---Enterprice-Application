@@ -1,0 +1,11 @@
+﻿name: billing-service
+port: 8097
+api_prefix: /api/v1/billing
+owner: "Commercial domain"
+responsibility: "Calculate illustrative EUR line items for subscriptions, sessions, and service bookings."
+upstream_dependencies: "subscription-service,promotions-service"
+downstream_dependencies: "payment-simulator,invoice-service"
+produces_events: "ChargeCalculated.v1"
+consumes_events: "ChargingSessionCompleted.v1,BookingConfirmed.v1,SubscriptionChanged.v1"
+data_ownership: "billing schema"
+implementation_status: planned

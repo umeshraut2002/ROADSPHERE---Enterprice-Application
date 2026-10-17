@@ -1,0 +1,11 @@
+﻿name: location-service
+port: 8088
+api_prefix: /api/v1/locations
+owner: "Connected vehicle domain"
+responsibility: "Retain and query synthetic location samples with bounded time windows and retention."
+upstream_dependencies: "vehicle-registry-service"
+downstream_dependencies: "api-aggregation-service,trip-management-service"
+produces_events: "VehicleLocationRecorded.v1"
+consumes_events: "VehicleTelemetryReceived.v1"
+data_ownership: "location schema"
+implementation_status: planned

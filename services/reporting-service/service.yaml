@@ -1,0 +1,11 @@
+﻿name: reporting-service
+port: 8103
+api_prefix: /api/v1/reports
+owner: "Platform intelligence domain"
+responsibility: "Serve paginated operational reports from its own read model and bounded time ranges."
+upstream_dependencies: "identity-service"
+downstream_dependencies: "None"
+produces_events: "None"
+consumes_events: "TripCompleted.v1,ChargingSessionCompleted.v1,DiagnosticAlertCreated.v1,AuditRecordCreated.v1"
+data_ownership: "reporting schema"
+implementation_status: planned

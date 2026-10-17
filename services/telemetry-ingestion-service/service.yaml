@@ -1,0 +1,11 @@
+﻿name: telemetry-ingestion-service
+port: 8086
+api_prefix: /api/v1/telemetry
+owner: "Connected vehicle domain"
+responsibility: "Validate synthetic telemetry ranges, assign correlation metadata, and publish versioned events keyed by vehicle."
+upstream_dependencies: "vehicle-registry-service"
+downstream_dependencies: "vehicle-status-service,location-service,diagnostics-service,trip-management-service"
+produces_events: "VehicleTelemetryReceived.v1"
+consumes_events: "None"
+data_ownership: "telemetry outbox"
+implementation_status: in-progress

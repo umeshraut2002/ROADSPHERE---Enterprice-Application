@@ -1,0 +1,11 @@
+﻿name: vehicle-status-service
+port: 8087
+api_prefix: /api/v1/vehicle-status
+owner: "Connected vehicle domain"
+responsibility: "Consume telemetry idempotently and maintain the latest state projection per registered vehicle."
+upstream_dependencies: "vehicle-registry-service"
+downstream_dependencies: "api-aggregation-service,fleet-analytics-service"
+produces_events: "VehicleStatusUpdated.v1"
+consumes_events: "VehicleTelemetryReceived.v1"
+data_ownership: "vehicle_state schema"
+implementation_status: in-progress

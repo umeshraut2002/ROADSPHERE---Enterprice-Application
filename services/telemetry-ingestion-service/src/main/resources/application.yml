@@ -1,0 +1,70 @@
+spring:
+  application:
+    name: telemetry-ingestion-service
+  datasource:
+    url: ${ROADSPHERE_DB_URL:jdbc:postgresql://127.0.0.1:5432/roadsphere}
+    username: ${ROADSPHERE_DB_USERNAME:roadsphere_telemetry}
+    password: ${ROADSPHERE_DB_PASSWORD:roadsphere-telemetry-local-only}
+    hikari:
+      maximum-pool-size: 5
+  flyway:
+    enabled: true
+    schemas: telemetry_outbox
+    default-schema: telemetry_outbox
+    create-schemas: false
+  jackson:
+    default-property-inclusion: non_null
+    deserialization:
+      fail-on-unknown-properties: true
+  kafka:
+    bootstrap-servers: ${ROADSPHERE_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+
+roadsphere:
+  kafka:
+    provision-telemetry-topic: ${ROADSPHERE_KAFKA_PROVISION_TELEMETRY_TOPIC:true}
+  telemetry:
+    topic: ${ROADSPHERE_TELEMETRY_TOPIC:roadsphere.telemetry.received.v1}
+    topic-partitions: ${ROADSPHERE_TELEMETRY_TOPIC_PARTITIONS:3}
+    topic-replicas: ${ROADSPHERE_TELEMETRY_TOPIC_REPLICAS:1}
+    outbox-poll-ms: ${ROADSPHERE_OUTBOX_POLL_MS:1000}
+  vehicle-registry:
+    base-url: ${ROADSPHERE_VEHICLE_REGISTRY_URL:http://127.0.0.1:8083}
+
+server:
+  address: ${ROADSPHERE_BIND_ADDRESS:127.0.0.1}
+  port: ${PORT:8086}
+  shutdown: graceful
+  error:
+    include-message: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+      group:
+        readiness:
+          include: readinessState,db
+  info:
+    env:
+      enabled: false
+
+info:
+  app:
+    name: telemetry-ingestion-service
+    scope: synthetic-learning-demo
+
+logging:
+  level:
+    root: INFO

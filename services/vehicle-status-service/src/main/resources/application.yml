@@ -1,0 +1,70 @@
+spring:
+  application:
+    name: vehicle-status-service
+  kafka:
+    bootstrap-servers: ${ROADSPHERE_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: roadsphere-vehicle-status
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    listener:
+      ack-mode: record
+      concurrency: 1
+  datasource:
+    url: ${ROADSPHERE_DB_URL:jdbc:postgresql://127.0.0.1:5432/roadsphere}
+    username: ${ROADSPHERE_DB_USERNAME:roadsphere_status}
+    password: ${ROADSPHERE_DB_PASSWORD:roadsphere-status-local-only}
+    hikari:
+      maximum-pool-size: 5
+  flyway:
+    enabled: true
+    schemas: vehicle_state
+    default-schema: vehicle_state
+    create-schemas: false
+  jackson:
+    default-property-inclusion: non_null
+    deserialization:
+      fail-on-unknown-properties: true
+
+roadsphere:
+  telemetry:
+    topic: ${ROADSPHERE_TELEMETRY_TOPIC:roadsphere.telemetry.received.v1}
+    retry-topics-auto-create: ${ROADSPHERE_TELEMETRY_RETRY_TOPICS_AUTO_CREATE:true}
+    topic-partitions: ${ROADSPHERE_TELEMETRY_TOPIC_PARTITIONS:3}
+    topic-replicas: ${ROADSPHERE_TELEMETRY_TOPIC_REPLICAS:1}
+  vehicle-registry:
+    base-url: ${ROADSPHERE_VEHICLE_REGISTRY_URL:http://127.0.0.1:8083}
+
+server:
+  address: ${ROADSPHERE_BIND_ADDRESS:127.0.0.1}
+  port: ${PORT:8087}
+  shutdown: graceful
+  error:
+    include-message: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+      group:
+        readiness:
+          include: readinessState,db
+  info:
+    env:
+      enabled: false
+
+info:
+  app:
+    name: vehicle-status-service
+    scope: synthetic-learning-demo
+
+logging:
+  level:
+    root: INFO

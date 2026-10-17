@@ -1,0 +1,14 @@
+node_modules/
+dist/
+**/target/
+.env
+.env.*
+!.env.example
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfplan.*
+*.tfvars
+!*.tfvars.example
+.idea/

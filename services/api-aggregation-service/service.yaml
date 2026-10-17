@@ -1,0 +1,11 @@
+﻿name: api-aggregation-service
+port: 8080
+api_prefix: /api/v1/dashboard
+owner: "Platform edge domain"
+responsibility: "Serve bounded dashboard aggregation with per-downstream timeouts, authentication forwarding, and response correlation."
+upstream_dependencies: "identity-service"
+downstream_dependencies: "vehicle-registry-service,vehicle-status-service,trip-management-service,diagnostics-service,charging-session-service,maintenance-service,invoice-service,fleet-analytics-service"
+produces_events: "None"
+consumes_events: "None"
+data_ownership: "None; read through owner APIs"
+implementation_status: planned

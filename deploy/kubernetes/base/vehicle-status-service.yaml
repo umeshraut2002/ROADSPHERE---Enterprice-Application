@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vehicle-status-service
+  namespace: roadsphere-demo
+  labels:
+    app.kubernetes.io/name: vehicle-status-service
+    app.kubernetes.io/part-of: roadsphere
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: vehicle-status-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: vehicle-status-service
+        app.kubernetes.io/part-of: roadsphere
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: vehicle-status
+          image: roadsphere/vehicle-status-service:dev
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8087
+          env:
+            - name: PORT
+              value: "8087"
+            - name: ROADSPHERE_BIND_ADDRESS
+              value: 0.0.0.0
+            - name: ROADSPHERE_DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: vehicle-status-db
+                  key: url
+            - name: ROADSPHERE_DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: vehicle-status-db
+                  key: username
+            - name: ROADSPHERE_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: vehicle-status-db
+                  key: password
+            - name: ROADSPHERE_VEHICLE_REGISTRY_URL
+              value: http://vehicle-registry-service:8083
+            - name: ROADSPHERE_KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                secretKeyRef:
+                  name: roadsphere-kafka
+                  key: bootstrap-servers
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=55.0
+          resources:
+            requests:
+              cpu: 100m
+              memory: 160Mi
+            limits:
+              cpu: 500m
+              memory: 384Mi
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            periodSeconds: 3
+            failureThreshold: 30
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 4
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 32Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vehicle-status-service
+  namespace: roadsphere-demo
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: vehicle-status-service
+  ports:
+    - name: http
+      port: 8087
+      targetPort: http

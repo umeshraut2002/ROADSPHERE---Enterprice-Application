@@ -1,0 +1,11 @@
+﻿name: notification-service
+port: 8096
+api_prefix: /api/v1/notifications
+owner: "Customer operations domain"
+responsibility: "Create in-app notices and record simulated email/push delivery outcomes based on preferences."
+upstream_dependencies: "identity-service,user-preferences-service"
+downstream_dependencies: "None"
+produces_events: "NotificationDelivered.v1,NotificationDeliveryFailed.v1"
+consumes_events: "DiagnosticAlertCreated.v1,MaintenanceScheduled.v1,SubscriptionChanged.v1"
+data_ownership: "notification schema"
+implementation_status: planned

@@ -1,0 +1,322 @@
+name: roadsphere
+
+services:
+  postgres:
+    image: postgres:18.6
+    environment:
+      POSTGRES_DB: roadsphere
+      POSTGRES_USER: roadsphere_admin
+      POSTGRES_PASSWORD: roadsphere-compose-only
+    volumes:
+      - ./deploy/postgres/init:/docker-entrypoint-initdb.d:ro
+    mem_limit: 512m
+    cpus: 0.50
+    pids_limit: 100
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U roadsphere_admin -d roadsphere]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    read_only: true
+    tmpfs:
+      - /var/lib/postgresql:uid=999,gid=999,mode=0700
+      - /var/run/postgresql:uid=999,gid=999,mode=3775
+      - /tmp:uid=999,gid=999,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+
+  kafka:
+    image: apache/kafka:4.2.2
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+    mem_limit: 1024m
+    cpus: 1.00
+    pids_limit: 200
+    healthcheck:
+      test: [CMD-SHELL, /opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server 127.0.0.1:9092 >/dev/null 2>&1]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+
+  vehicle-registry-service:
+    image: roadsphere/vehicle-registry-service:dev
+    build:
+      context: ./services/vehicle-registry-service
+    environment:
+      PORT: 8083
+      ROADSPHERE_BIND_ADDRESS: 0.0.0.0
+      ROADSPHERE_DB_URL: jdbc:postgresql://postgres:5432/roadsphere
+      ROADSPHERE_DB_USERNAME: roadsphere_registry
+      ROADSPHERE_DB_PASSWORD: roadsphere-local-only
+    ports:
+      - 127.0.0.1:8083:8083
+    mem_limit: 384m
+    cpus: 0.75
+    pids_limit: 100
+    healthcheck:
+      test: [CMD, wget, -q, -O, -, http://127.0.0.1:8083/actuator/health/readiness]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  vehicle-status-service:
+    image: roadsphere/vehicle-status-service:dev
+    build:
+      context: ./services/vehicle-status-service
+    environment:
+      PORT: 8087
+      ROADSPHERE_BIND_ADDRESS: 0.0.0.0
+      ROADSPHERE_DB_URL: jdbc:postgresql://postgres:5432/roadsphere
+      ROADSPHERE_DB_USERNAME: roadsphere_status
+      ROADSPHERE_DB_PASSWORD: roadsphere-status-local-only
+      ROADSPHERE_VEHICLE_REGISTRY_URL: http://vehicle-registry-service:8083
+      ROADSPHERE_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    ports:
+      - 127.0.0.1:8087:8087
+    mem_limit: 384m
+    cpus: 0.75
+    pids_limit: 100
+    healthcheck:
+      test: [CMD, wget, -q, -O, -, http://127.0.0.1:8087/actuator/health/readiness]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      vehicle-registry-service:
+        condition: service_healthy
+    restart: unless-stopped
+
+  telemetry-ingestion-service:
+    image: roadsphere/telemetry-ingestion-service:dev
+    build:
+      context: ./services/telemetry-ingestion-service
+    environment:
+      PORT: 8086
+      ROADSPHERE_BIND_ADDRESS: 0.0.0.0
+      ROADSPHERE_DB_URL: jdbc:postgresql://postgres:5432/roadsphere
+      ROADSPHERE_DB_USERNAME: roadsphere_telemetry
+      ROADSPHERE_DB_PASSWORD: roadsphere-telemetry-local-only
+      ROADSPHERE_VEHICLE_REGISTRY_URL: http://vehicle-registry-service:8083
+      ROADSPHERE_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    ports:
+      - 127.0.0.1:8086:8086
+    mem_limit: 384m
+    cpus: 0.75
+    pids_limit: 100
+    healthcheck:
+      test: [CMD, wget, -q, -O, -, http://127.0.0.1:8086/actuator/health/readiness]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 25s
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      vehicle-registry-service:
+        condition: service_healthy
+    restart: unless-stopped
+
+  local-demo-api:
+    image: roadsphere/local-demo-api:dev
+    build:
+      context: ./services/local-demo-api
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8080
+      CORS_ORIGINS: http://localhost:5173,http://localhost:5174
+      VEHICLE_REGISTRY_URL: http://vehicle-registry-service:8083
+      VEHICLE_STATUS_URL: http://vehicle-status-service:8087
+      TELEMETRY_INGESTION_URL: http://telemetry-ingestion-service:8086
+    ports:
+      - 127.0.0.1:8080:8080
+    mem_limit: 256m
+    cpus: 0.50
+    pids_limit: 100
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:8080/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    depends_on:
+      vehicle-registry-service:
+        condition: service_healthy
+      vehicle-status-service:
+        condition: service_healthy
+      telemetry-ingestion-service:
+        condition: service_healthy
+    restart: unless-stopped
+
+  fleet-operations:
+    image: roadsphere/fleet-operations:dev
+    build:
+      context: ./frontends/fleet-operations
+      args:
+        VITE_API_BASE_URL: /api
+    ports:
+      - 127.0.0.1:5173:8080
+    mem_limit: 384m
+    cpus: 0.75
+    pids_limit: 100
+    depends_on:
+      local-demo-api:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, wget, -q, -O, -, http://127.0.0.1:8080/]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+
+  customer-portal:
+    image: roadsphere/customer-portal:dev
+    build:
+      context: ./frontends/customer-portal
+      args:
+        VITE_API_BASE_URL: /api
+    ports:
+      - 127.0.0.1:5174:8080
+    mem_limit: 384m
+    cpus: 0.75
+    pids_limit: 100
+    depends_on:
+      local-demo-api:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, wget, -q, -O, -, http://127.0.0.1:8080/]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.15.0
+    profiles: [observability]
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=24h
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - 127.0.0.1:9090:9090
+    mem_limit: 512m
+    cpus: 0.50
+    pids_limit: 100
+    tmpfs:
+      - /prometheus
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    depends_on:
+      local-demo-api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:13.2.2
+    profiles: [observability]
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: roadsphere-demo-only
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - 127.0.0.1:3000:3000
+    mem_limit: 512m
+    cpus: 0.75
+    pids_limit: 100
+    tmpfs:
+      - /var/lib/grafana:uid=472,gid=0,mode=0750
+      - /var/log/grafana:uid=472,gid=0,mode=0750
+      - /tmp:uid=472,gid=0,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    depends_on:
+      - prometheus
+    restart: unless-stopped

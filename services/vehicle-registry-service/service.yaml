@@ -1,0 +1,11 @@
+﻿name: vehicle-registry-service
+port: 8083
+api_prefix: /api/v1/vehicles
+owner: "Vehicle registry domain"
+responsibility: "Register synthetic vehicles, metadata, and owner associations; reject duplicate registrations per owner."
+upstream_dependencies: "identity-service"
+downstream_dependencies: "vehicle-status-service,audit-service"
+produces_events: "VehicleRegistered.v1"
+consumes_events: "None"
+data_ownership: "vehicle_registry schema"
+implementation_status: in-progress

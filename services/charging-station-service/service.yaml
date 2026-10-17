@@ -1,0 +1,11 @@
+﻿name: charging-station-service
+port: 8094
+api_prefix: /api/v1/charging-stations
+owner: "Mobility operations domain"
+responsibility: "Publish synthetic station inventory, connector types, power, and availability snapshots."
+upstream_dependencies: "None"
+downstream_dependencies: "booking-service,charging-session-service,api-aggregation-service"
+produces_events: "StationAvailabilityChanged.v1"
+consumes_events: "None"
+data_ownership: "station schema"
+implementation_status: planned

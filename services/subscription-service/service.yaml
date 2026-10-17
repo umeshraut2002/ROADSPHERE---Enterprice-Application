@@ -1,0 +1,11 @@
+﻿name: subscription-service
+port: 8085
+api_prefix: /api/v1/subscriptions
+owner: "Commercial domain"
+responsibility: "Apply plan transitions and derive synthetic entitlements; publish lifecycle changes."
+upstream_dependencies: "identity-service,promotions-service"
+downstream_dependencies: "billing-service,notification-service,audit-service"
+produces_events: "SubscriptionChanged.v1"
+consumes_events: "SimulatedPaymentCompleted.v1"
+data_ownership: "subscription schema"
+implementation_status: planned

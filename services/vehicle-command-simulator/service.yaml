@@ -1,0 +1,11 @@
+﻿name: vehicle-command-simulator
+port: 8091
+api_prefix: /api/v1/vehicle-commands
+owner: "Connected vehicle domain"
+responsibility: "Accept allow-listed nonphysical refresh requests and record their simulated completion."
+upstream_dependencies: "identity-service,vehicle-registry-service"
+downstream_dependencies: "vehicle-status-service,audit-service"
+produces_events: "SimulatedVehicleCommandCompleted.v1"
+consumes_events: "None"
+data_ownership: "command schema"
+implementation_status: planned

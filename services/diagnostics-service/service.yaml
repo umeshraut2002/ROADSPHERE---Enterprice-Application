@@ -1,0 +1,11 @@
+﻿name: diagnostics-service
+port: 8090
+api_prefix: /api/v1/diagnostics
+owner: "Connected vehicle domain"
+responsibility: "Apply documented synthetic thresholds to telemetry and track alert lifecycle and deduplication."
+upstream_dependencies: "vehicle-registry-service"
+downstream_dependencies: "notification-service,audit-service,fleet-analytics-service"
+produces_events: "DiagnosticAlertCreated.v1,DiagnosticAlertResolved.v1"
+consumes_events: "VehicleTelemetryReceived.v1"
+data_ownership: "diagnostics schema"
+implementation_status: planned

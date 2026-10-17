@@ -1,0 +1,11 @@
+﻿name: customer-profile-service
+port: 8082
+api_prefix: /api/v1/customers
+owner: "Customer domain"
+responsibility: "Store and return customer account profiles with ownership-scoped access."
+upstream_dependencies: "identity-service"
+downstream_dependencies: "audit-service"
+produces_events: "CustomerProfileChanged.v1"
+consumes_events: "UserAuthenticated.v1"
+data_ownership: "customer schema"
+implementation_status: planned

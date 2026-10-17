@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: roadsphere-demo
+resources:
+  - vehicle-registry-service.yaml
+  - vehicle-status-service.yaml
+  - telemetry-ingestion-service.yaml
+  - api.yaml
+  - fleet-operations.yaml
+  - customer-portal.yaml

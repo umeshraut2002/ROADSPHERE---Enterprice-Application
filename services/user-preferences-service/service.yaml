@@ -1,0 +1,11 @@
+﻿name: user-preferences-service
+port: 8084
+api_prefix: /api/v1/preferences
+owner: "Customer domain"
+responsibility: "Manage locale, notification channel choices, and customer display settings."
+upstream_dependencies: "identity-service"
+downstream_dependencies: "notification-service"
+produces_events: "PreferencesChanged.v1"
+consumes_events: "None"
+data_ownership: "preferences schema"
+implementation_status: planned

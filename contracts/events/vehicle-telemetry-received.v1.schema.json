@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://roadsphere.example/contracts/events/vehicle-telemetry-received.v1.schema.json",
+  "title": "VehicleTelemetryReceived v1",
+  "description": "Synthetic telemetry only. This event must never be used to control a real vehicle.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["eventId", "vehicleId", "recordedAt", "batteryPercent", "batteryTemperatureC", "speedKph", "latitude", "longitude", "charging"],
+  "properties": {
+    "eventId": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "vehicleId": { "type": "string", "minLength": 1, "maxLength": 32 },
+    "recordedAt": { "type": "string", "format": "date-time" },
+    "batteryPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+    "batteryTemperatureC": { "type": "number", "minimum": -40, "maximum": 100 },
+    "speedKph": { "type": "number", "minimum": 0, "maximum": 260 },
+    "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
+    "longitude": { "type": "number", "minimum": -180, "maximum": 180 },
+    "charging": { "type": "boolean" }
+  }
+}

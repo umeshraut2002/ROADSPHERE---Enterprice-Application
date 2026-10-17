@@ -1,0 +1,11 @@
+﻿name: identity-service
+port: 8081
+api_prefix: /api/v1/identity
+owner: "Identity domain"
+responsibility: "Authenticate synthetic users, issue and validate tokens, and assign CUSTOMER, FLEET_OPERATOR, and PLATFORM_ADMIN roles."
+upstream_dependencies: "None"
+downstream_dependencies: "customer-profile-service,user-preferences-service,audit-service"
+produces_events: "UserAuthenticated.v1"
+consumes_events: "None"
+data_ownership: "identity schema"
+implementation_status: planned

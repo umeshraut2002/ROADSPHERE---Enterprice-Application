@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: local-demo-api
+  namespace: roadsphere-demo
+  labels:
+    app.kubernetes.io/name: local-demo-api
+    app.kubernetes.io/part-of: roadsphere
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: local-demo-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: local-demo-api
+        app.kubernetes.io/part-of: roadsphere
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: api
+          image: roadsphere/local-demo-api:dev
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: HOST
+              value: 0.0.0.0
+            - name: PORT
+              value: "8080"
+            - name: CORS_ORIGINS
+              value: http://localhost:5173,http://localhost:5174
+            - name: VEHICLE_REGISTRY_URL
+              value: http://vehicle-registry-service:8083
+            - name: VEHICLE_STATUS_URL
+              value: http://vehicle-status-service:8087
+            - name: TELEMETRY_INGESTION_URL
+              value: http://telemetry-ingestion-service:8086
+          resources:
+            requests:
+              cpu: 100m
+              memory: 96Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          startupProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            periodSeconds: 2
+            failureThreshold: 15
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 4
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 16Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: local-demo-api
+  namespace: roadsphere-demo
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: local-demo-api
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http

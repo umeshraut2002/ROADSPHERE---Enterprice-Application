@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vehicle-registry-service
+  namespace: roadsphere-demo
+  labels:
+    app.kubernetes.io/name: vehicle-registry-service
+    app.kubernetes.io/part-of: roadsphere
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: vehicle-registry-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: vehicle-registry-service
+        app.kubernetes.io/part-of: roadsphere
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: vehicle-registry
+          image: roadsphere/vehicle-registry-service:dev
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: PORT
+              value: "8083"
+            - name: ROADSPHERE_BIND_ADDRESS
+              value: 0.0.0.0
+            - name: ROADSPHERE_DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: vehicle-registry-db
+                  key: url
+            - name: ROADSPHERE_DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: vehicle-registry-db
+                  key: username
+            - name: ROADSPHERE_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: vehicle-registry-db
+                  key: password
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=55.0
+          ports:
+            - name: http
+              containerPort: 8083
+          resources:
+            requests:
+              cpu: 100m
+              memory: 160Mi
+            limits:
+              cpu: 500m
+              memory: 384Mi
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            periodSeconds: 3
+            failureThreshold: 30
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 32Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vehicle-registry-service
+  namespace: roadsphere-demo
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: vehicle-registry-service
+  ports:
+    - name: http
+      port: 8083
+      targetPort: http

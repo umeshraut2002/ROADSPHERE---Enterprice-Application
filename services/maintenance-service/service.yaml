@@ -1,0 +1,11 @@
+﻿name: maintenance-service
+port: 8092
+api_prefix: /api/v1/maintenance
+owner: "Mobility operations domain"
+responsibility: "Maintain service schedules and records; surface due maintenance from synthetic mileage and diagnostics."
+upstream_dependencies: "identity-service,vehicle-registry-service,diagnostics-service"
+downstream_dependencies: "booking-service,notification-service,billing-service"
+produces_events: "MaintenanceScheduled.v1,MaintenanceCompleted.v1"
+consumes_events: "DiagnosticAlertCreated.v1"
+data_ownership: "maintenance schema"
+implementation_status: planned

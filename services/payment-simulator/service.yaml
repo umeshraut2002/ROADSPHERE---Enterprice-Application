@@ -1,0 +1,11 @@
+﻿name: payment-simulator
+port: 8098
+api_prefix: /api/v1/payment-simulations
+owner: "Commercial domain"
+responsibility: "Generate deterministic synthetic authorized, declined, and retryable outcomes; never contact a payment rail."
+upstream_dependencies: "billing-service"
+downstream_dependencies: "invoice-service,subscription-service,notification-service"
+produces_events: "SimulatedPaymentCompleted.v1,SimulatedPaymentFailed.v1"
+consumes_events: "ChargeCalculated.v1"
+data_ownership: "payment_simulation schema"
+implementation_status: planned

@@ -1,0 +1,11 @@
+name: local-demo-api
+port: 8080
+api_prefix: /api/v1
+owner: "Local learning environment"
+responsibility: "Dependency-free local API adapter for synthetic fleet, telemetry, diagnostics, maintenance booking, and payment-simulation workflows."
+upstream_dependencies: "None"
+downstream_dependencies: "None"
+produces_events: "In-process telemetry and booking activity only"
+consumes_events: "None"
+data_ownership: "In-memory synthetic demo state"
+implementation_status: "local prototype; not a production domain service"

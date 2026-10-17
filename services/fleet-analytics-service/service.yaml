@@ -1,0 +1,11 @@
+﻿name: fleet-analytics-service
+port: 8104
+api_prefix: /api/v1/fleet-analytics
+owner: "Platform intelligence domain"
+responsibility: "Aggregate utilization, health, charging, and vehicle availability from business event projections."
+upstream_dependencies: "identity-service"
+downstream_dependencies: "api-aggregation-service,reporting-service"
+produces_events: "FleetMetricUpdated.v1"
+consumes_events: "VehicleStatusUpdated.v1,TripCompleted.v1,ChargingSessionCompleted.v1,DiagnosticAlertCreated.v1"
+data_ownership: "analytics schema"
+implementation_status: planned
